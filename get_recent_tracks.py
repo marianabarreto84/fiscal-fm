@@ -111,8 +111,39 @@ def get_api_last_scrobble(rt_info):
             return unix_time
     return None
 
+def get_api_first_scrobble(username, api_key, page, limit=200):
+    # URL da API do Last.fm para obter as informações do usuário
+    url = 'https://ws.audioscrobbler.com/2.0/'
+    
+    # Parâmetros da requisição
+    params = {
+        'method': 'user.getrecenttracks',
+        'user': username,
+        'api_key': api_key,
+        'limit': limit,
+        'page': page,
+        'format': 'json'
+    }
+    
+    # Faz a requisição à API do Last.fm
+    response = requests.get(url, params=params)
+    
+    # Verifica se a requisição foi bem-sucedida
+    if response.status_code == 200:
+        data = response.json()
+        if len(data['recenttracks']['track']) > 0:
+            track = data['recenttracks']['track'][-1] # Pega o ultimo porque se tiver uma musica tocando no momento ela vai ser retornada como a primeira
+            unix_time = int(track['date']['uts'])
+            return unix_time
+        else:
+            print(f"[get_api_first_scrobble] Nenhuma track foi retornada. Dados: {data}")
+    else:
+        print(f"[get_api_first_scrobble] Erro ao acessar a API: {response.text}")
+        exit()
+        return None
 
-def get_api_total_pages(username, api_key, start_date=None, end_date=None, page=1, limit=200):
+
+def get_api_page_count(username, api_key, start_date=None, end_date=None, page=1, limit=200):
     time_limit_str = ""
     if start_date is not None:
         time_limit_str += f"&from={start_date}"
@@ -126,7 +157,7 @@ def get_api_total_pages(username, api_key, start_date=None, end_date=None, page=
         data = response.json()
         return int(data['recenttracks']['@attr']['totalPages'])
     else:
-        print(f"[get_api_total_pages] Erro na requisição: {response.status_code} - {response.text}")
+        print(f"[get_api_page_count] Erro na requisição: {response.status_code} - {response.text}")
         return
 
 
@@ -161,7 +192,7 @@ def get_db_last_scrobble(username):
     return result
 
 
-def get_recent_tracks(username, api_key, start_date=None, end_date=None, page=1, limit=200):
+def get_recent_tracks(username, api_key, start_date=None, end_date=None, page=1, limit=200, tentativas=0):
     time_limit_str = ""
     if start_date is not None:
         time_limit_str += f"&from={start_date}"
@@ -170,7 +201,13 @@ def get_recent_tracks(username, api_key, start_date=None, end_date=None, page=1,
     url = f"http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user={username}&api_key={api_key}&limit={limit}&format=json&page={page}{time_limit_str}"
     response = requests.get(url)
     if response.status_code != 200:
-        print(f"[get_recent_tracks] Não foi possível acessar a API: {response.text}")
+        print(f"[get_recent_tracks] Erro {response.status_code}: {response.text}")
+        if tentativas < 5:
+            tentativas += 1
+            print(f"[get_recent_tracks] Tentando novamente... (tentativa = {tentativa})")
+            recent_tracks = get_recent_tracks(username, api_key, start_date=start_date, end_date=start_date, page=page, tentativas)
+            return recent_tracks
+        print(f"[get_recent_tracks] Limite de tentativas estourado. Tente novamente mais tarde")
         exit()
     data = response.json()
     recent_tracks = []
@@ -208,6 +245,8 @@ def save_user_recent_tracks(user):
     api_registered = get_api_registered(user_info)
     api_last_scrobble = get_api_last_scrobble(rt_info)
     api_total_scrobbles = get_api_total_scrobbles(rt_info)
+    api_total_pages = get_api_page_count(user, constantes.API_KEY)
+    api_first_scrobble = get_api_first_scrobble(user, constantes.API_KEY, api_total_pages) # Lembrando que nesse caso o limite tem que ser o mesmo do de cima
 
     db_playcount = get_db_playcount(user)
     db_first_scrobble = get_db_first_scrobble(user)
@@ -232,9 +271,10 @@ def save_user_recent_tracks(user):
         elif timestamp_to_unix(db_first_scrobble) > api_registered:
             end_date = timestamp_to_unix(db_first_scrobble, in_utc=False) - 1
     
-    api_total_pages = get_api_total_pages(user, constantes.API_KEY, start_date, end_date)
-    print(f"[save_user_recent_tracks] Faltam inserir {api_playcount - db_playcount} scrobbles - Total de Páginas: {api_total_pages}")
-    print(f"[save_user_recent_tracks] Período de Scrobbles de acordo com a API: {format_datetime(api_registered)} até {format_datetime(api_last_scrobble)}")
+    api_page_count = get_api_page_count(user, constantes.API_KEY, start_date, end_date)
+
+    print(f"[save_user_recent_tracks] Faltam inserir {api_playcount - db_playcount} scrobbles - Total de Páginas: {api_page_count}")
+    print(f"[save_user_recent_tracks] Período de Scrobbles de acordo com a API: {format_datetime(api_first_scrobble)} até {format_datetime(api_last_scrobble)}")
     if db_playcount > 0:
         print(f"[save_user_recent_tracks] Período de Scrobbles de acordo com o DB: {db_first_scrobble} até {db_last_scrobble}")
 
@@ -252,7 +292,7 @@ def save_user_recent_tracks(user):
     # print(f"[save_user_recent_tracks] Esperando tempo inicial para coleta...\n")
     time.sleep(constantes.WAIT_TIME * 2)
 
-    for page in range(1, api_total_pages + 1):
+    for page in range(1, api_page_count + 1):
         recent_tracks = get_recent_tracks(user, constantes.API_KEY, start_date=start_date, end_date=end_date, page=page)
         if len(recent_tracks) == 0:
             print(f"[save_user_recent_tracks] Não foi possível coletar mais scrobbles, finalizando coleta do usuário.")

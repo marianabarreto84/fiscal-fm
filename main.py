@@ -31,26 +31,51 @@ def update_control_panel(cp_id, status):
     """
     params = (status, cp_id)
     execute_db_statement(statement, params)
+    print(f"[update_control_panel] Painel de controle atualizado corretamente.")
     return
 
-def update_stats():
+def update_visions(list_of_initial_usernames):
     statement = """
     REFRESH MATERIALIZED VIEW stats_artists;
     """
     params = ()
     execute_db_statement(statement, params)
+    print(f"[update_stats] Visão stats_artists atualizada.")
+
+    statement = """
+    REFRESH MATERIALIZED VIEW scrobbles24;
+    """
+    params = ()
+    execute_db_statement(statement, params)
+    print(f"[update_stats] Visão scrobbles24 atualizada.")
+
+    for username in list_of_initial_usernames:
+        initial_abbv = "mb"
+        if username == "vicisnotonfire":
+            initial_abbv = "vic"
+        statement = f"""
+        REFRESH MATERIALIZED VIEW scrobbles_{initial_abbv};
+        """
+        params = ()
+        execute_db_statement(statement, params)
+        print(f"[update_stats] Visão scrobbles_{initial_abbv} atualizada.")
     return
 
-
-
+list_of_users = []
 status = 1
-initial_username = constantes.USERNAME
-list_of_users = get_friends(initial_username)
 
-print(f"[main] Lista de usuários: {list_of_users}\n")
+for initial_username in constantes.LIST_OF_INITIAL_USERNAMES:
+    list_of_friends = get_friends(initial_username)
+    list_of_users.append(list_of_friends)
 
-insert_into_control_panel("update_scrobbles")
+list_of_users_set = set().union(*list_of_users)
+list_of_users = list(list_of_users_set)
+
+print(f"[main] Usuarios para serem atualizados: {list_of_users}\n")
+
+insert_into_control_panel(f"update_scrobbles")
 cp_id = get_control_panel_info()
+
 for user in list_of_users:
     status = save_user_recent_tracks(user)
     if status == -1:
@@ -61,8 +86,5 @@ for user in list_of_users:
 
 status = 2
 
-update_stats()
-print(f"[main] Visões materializadas atualizadas.")
-
+update_visions(constantes.LIST_OF_INITIAL_USERNAMES)
 update_control_panel(cp_id, status)
-print(f"[main] Painel de controle atualizado corretamente.")

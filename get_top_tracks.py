@@ -5,7 +5,7 @@ import time
 import requests
 from file_manager import get_lines_from_file
 
-def get_artist_top_tracks(artist_name, limit=1):
+def get_artist_top_tracks(artist_name, limit=1, initial=0):
     # Buscar o ID do artista
     search_url = f"https://api.spotify.com/v1/search?q={artist_name}&type=artist"
     headers = {
@@ -26,7 +26,7 @@ def get_artist_top_tracks(artist_name, limit=1):
                 top_tracks_data = response.json()
                 if top_tracks_data['tracks']:
                     top_tracks = []
-                    for track in top_tracks_data['tracks'][:(limit)]:
+                    for track in top_tracks_data['tracks'][initial:(limit)]:
                         top_tracks.append({
                             'id': track['id'],
                             'name': track['name'],

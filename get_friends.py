@@ -14,3 +14,5 @@ def get_friends(username, page=1, limit=200):
     for friend in lista_friends:
         lista_users.append(friend['name'])
     return lista_users
+
+# TODO: fazer uma funcao para pegar o numero de amigos e salvar no banco se a pessoa seguiu um usuario novo ou deixou de seguir pra atualizar a tabela de seguindo

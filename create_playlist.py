@@ -4,6 +4,7 @@ import constantes
 import playlists
 import sys
 from get_top_tracks import get_artist_top_tracks
+from get_tracks import get_spotify_track
 from file_manager import get_lines_from_file
 
 def create_playlist(playlist_name, track_ids):
@@ -44,24 +45,45 @@ def create_playlist(playlist_name, track_ids):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("[main] Por favor insira o nome da playlist que será criada nos argumentos da linha de comando.\n\t- python create_playlist.py \"<nome_da_playlist>\"")
-        exit()
 
-    playlist_name = ' '.join(sys.argv[1:])
-    artists = get_lines_from_file("files/pck_artists.txt")
-
+    tipo = "t"
     playlist = []
-    for artist in artists:
-        top_tracks = get_artist_top_tracks(artist)
 
-        if top_tracks:
-            for track in top_tracks:
-                print(f"[main] {artist} - {track['name']} - Album: {track['album']} - Popularidade: {track['popularity']} - ID: {track['id']}")
-                playlist.append(track['id'])
-        
-        time.sleep(0.5)
+    if len(sys.argv) < 3:
+        print("[main] Por favor insira o nome da playlist e o nome do arquivo original que será criada nos argumentos da linha de comando.")
+        print("\t- python create_playlist.py \"<nome_do_arquivo>\" \"<nome_da_playlist>\" [<tipo>]")
+        print("\t- <tipo>: \"a\" para arquivos de artistas e \"t\" para arquivos de musicas. O padrão é \"t\".")
+        exit()
+    elif len(sys.argv) > 3:
+        tipo = sys.argv[3]
 
-    # print(playlist)
+    file_name = sys.argv[1]
+    playlist_name = sys.argv[2]
+    artists = get_lines_from_file(f"files/{file_name}")
+
+    if tipo == "a":
+        for artist in artists:
+            top_tracks = get_artist_top_tracks(artist)
+
+            if top_tracks:
+                for track in top_tracks:
+                    print(f"[main] {artist} - {track['name']} - Album: {track['album']} - Popularidade: {track['popularity']} - ID: {track['id']}")
+                    playlist.append(track['id'])
+            
+            time.sleep(0.5)
+    elif tipo == "t":
+        tracks_lines = get_lines_from_file(f"files/{file_name}")
+        for track in tracks_lines:
+            track = track.split("\t-\t")
+            track_name = track[0]
+            artist_name = track[1]
+            track_found = get_spotify_track(track_name, artist_name)
+            if track_found:
+                print(f"[main] {track_found['name']} - Artista: {track_found['artist']} - Album: {track_found['album']} - ID: {track_found['id']} | Original: {track_name} - {artist_name}")
+            else:
+                print(f"[main] Não foi possivel encontrar a musica {track_name} de {artist_name}.")
+            playlist.append(track_found['id'])
+            time.sleep(0.5)
+    
     time.sleep(2)
     create_playlist(playlist_name, playlist)
