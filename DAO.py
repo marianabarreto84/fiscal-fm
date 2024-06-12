@@ -84,7 +84,10 @@ def save_to_database(recent_tracks):
     insertions = 0
     for track in recent_tracks:
         try:
-            cursor.execute("""INSERT INTO scrobbles (username, artist, track, album, scrobble_date) VALUES (%s, %s, %s, %s, %s)""", (track['user'], track['artist'], track['track'], track['album'], track['date']))
+            cursor.execute("""
+            INSERT INTO scrobbles (username, artist, track, album, scrobble_date)
+            VALUES (%s, %s, %s, %s, %s)
+            """, (track['user'], track['artist'], track['track'], track['album'], track['date']))
             # print(f"[save_to_databse] LOG REPORT: {track['user']} - {track['track']} - {track['date']}")
             insertions += 1
         except Exception as e:
@@ -96,3 +99,60 @@ def save_to_database(recent_tracks):
     conn.commit()
     conn.close()
     return insertions
+
+
+def insert_into_control_panel(chave):
+    statement = """
+    INSERT INTO control_panel (start_date, chave, table_name, status)
+    VALUES (now(), %s, 'scrobbles', 0);
+    """
+    params = (chave,)
+    execute_db_statement(statement, params)
+    return
+
+
+def get_control_panel_info():
+    query = """
+    SELECT max(id) FROM control_panel;
+    """
+    params = ()
+    cp_id = int(get_db_query(query, params)[0][0])
+    return cp_id
+
+def update_control_panel(cp_id, status):
+    statement = """
+    UPDATE control_panel SET end_date = now(), status = %s WHERE id = %s
+    """
+    params = (status, cp_id)
+    execute_db_statement(statement, params)
+    print(f"[update_control_panel] Painel de controle atualizado corretamente.")
+    return
+
+def update_visions(list_of_initial_usernames):
+    print("[update_visions] Atualizando as visões...")
+
+    statement = """
+    REFRESH MATERIALIZED VIEW stats_artists;
+    """
+    params = ()
+    execute_db_statement(statement, params)
+    print(f"[update_stats] Visão stats_artists atualizada.")
+
+    statement = """
+    REFRESH MATERIALIZED VIEW scrobbles24;
+    """
+    params = ()
+    execute_db_statement(statement, params)
+    print(f"[update_stats] Visão scrobbles24 atualizada.")
+
+    for username in list_of_initial_usernames:
+        initial_abbv = "mb"
+        if username == "vicisnotonfire":
+            initial_abbv = "vic"
+        statement = f"""
+        REFRESH MATERIALIZED VIEW scrobbles_{initial_abbv};
+        """
+        params = ()
+        execute_db_statement(statement, params)
+        print(f"[update_stats] Visão scrobbles_{initial_abbv} atualizada.")
+    return

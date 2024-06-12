@@ -243,3 +243,24 @@ FROM scrobbles_vic -- visão apenas com os usuários que ela segue
 WHERE artist NOT IN (SELECT artist FROM scrobbles WHERE username='vicisnotonfire')
 GROUP BY artist ORDER BY SQRT(COUNT(*) * COUNT(DISTINCT username)) DESC
 LIMIT 200;
+
+-- PROCURA DUPLICATAS
+
+SELECT s1.username, s1.scrobble_date, s1.insertion_date::text, s1.track FROM scrobbles s1, scrobbles s2
+WHERE s1.username=s2.username
+AND s1.artist=s2.artist
+AND s1.album=s2.album 
+AND s1.track=s2.track 
+AND s1.scrobble_date=s2.scrobble_date
+AND s1.insertion_date <> s2.insertion_date;
+
+
+-- MUSICAS FAMOSAS MENOS OUVIDAS
+
+SELECT track || '	-	' || artist
+FROM scrobbles
+WHERE (track, artist) NOT IN (SELECT track, artist FROM scrobbles
+							WHERE username='mbarretov2')
+--AND username IN (SELECT * FROM vic_seguindo)
+GROUP BY track, artist ORDER BY count(DISTINCT username) DESC, count(*) DESC
+LIMIT 100;

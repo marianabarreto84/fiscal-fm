@@ -51,7 +51,7 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 3:
         print("[main] Por favor insira o nome da playlist e o nome do arquivo original que será criada nos argumentos da linha de comando.")
-        print("\t- python create_playlist.py \"<nome_do_arquivo>\" \"<nome_da_playlist>\" [<tipo>]")
+        print("\t- python create_playlist.py \"<nome_do_arquivo>.txt\" \"<nome_da_playlist>\" [<tipo>]")
         print("\t- <tipo>: \"a\" para arquivos de artistas e \"t\" para arquivos de musicas. O padrão é \"t\".")
         exit()
     elif len(sys.argv) > 3:
@@ -64,7 +64,6 @@ if __name__ == "__main__":
     if tipo == "a":
         for artist in artists:
             top_tracks = get_artist_top_tracks(artist)
-
             if top_tracks:
                 for track in top_tracks:
                     print(f"[main] {artist} - {track['name']} - Album: {track['album']} - Popularidade: {track['popularity']} - ID: {track['id']}")

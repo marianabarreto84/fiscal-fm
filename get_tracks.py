@@ -5,6 +5,8 @@ import time
 from file_manager import get_lines_from_file
 
 def get_spotify_track(track_name, artist_name):
+    track_name = track_name.replace("'", "")
+    artist_name = artist_name.replace("'", "")
     search_url = 'https://api.spotify.com/v1/search'
 
     # Faz a busca na API do Spotify
@@ -41,6 +43,7 @@ if __name__ == "__main__":
     if len(sys.argv) >= 3:
         track_name = " ".join(sys.argv[1])
         artist_name = " ".join(sys.argv[2])
+
         track = get_spotify_track(track_name, artist_name)
 
         if track:
@@ -55,9 +58,9 @@ if __name__ == "__main__":
             info = line.split("\t-\t")
             track_list.append([info[0], info[1]])
         track_ids = []
-        for track in track_list:
+        for index, track in enumerate(track_list, start=1):
             track = get_spotify_track(track[0], track[1])
-            print(f"[main] {track['name']} - Artista: {track['artist']} - Album: {track['album']} - ID: {track['id']}")
+            print(f"[main] {index}. {track['name']} - Artista: {track['artist']} - Album: {track['album']} - ID: {track['id']}")
             track_ids.append(track['id'])
         time.sleep(0.5)
         print(track_ids)
