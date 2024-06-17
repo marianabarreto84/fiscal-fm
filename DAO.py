@@ -116,6 +116,9 @@ def get_control_panel_info():
     SELECT max(id) FROM control_panel;
     """
     params = ()
+    result = get_db_query(query, params)
+    if len(result) == 0:
+        return None
     cp_id = int(get_db_query(query, params)[0][0])
     return cp_id
 
@@ -135,8 +138,8 @@ def update_visions(list_of_initial_usernames):
     REFRESH MATERIALIZED VIEW stats_artists;
     """
     params = ()
-    execute_db_statement(statement, params)
-    print(f"[update_stats] Visão stats_artists atualizada.")
+    # execute_db_statement(statement, params)
+    # print(f"[update_stats] Visão stats_artists atualizada.")
 
     statement = """
     REFRESH MATERIALIZED VIEW scrobbles24;

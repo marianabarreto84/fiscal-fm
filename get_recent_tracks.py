@@ -130,7 +130,7 @@ def get_db_playcount(username):
     result = get_db_query(query, params)
     if len(result) != 0:
         return result[0][0]
-    return int(result)
+    return 0
 
 
 def get_db_first_scrobble(username):
@@ -139,7 +139,7 @@ def get_db_first_scrobble(username):
     result = get_db_query(query, params)
     if len(result) != 0:
         return result[0][0]
-    return result
+    return None
 
 
 def get_db_last_scrobble(username):
@@ -148,7 +148,7 @@ def get_db_last_scrobble(username):
     result = get_db_query(query, params)
     if len(result) != 0:
         return result[0][0]
-    return result
+    return None
 
 
 def get_recent_tracks(username, api_key, start_date=None, end_date=None, page=1, limit=200, tentativas=0):
@@ -269,10 +269,10 @@ def save_user_recent_tracks(user, start_date=None, end_date=None):
             if db_first_scrobble < end_date:
                 start_date = None
                 end_date = db_first_scrobble - 1
-        elif start_date is None and db_first_scrobble < api_last_scrobble:
+        elif start_date is None and db_last_scrobble < api_last_scrobble:
             start_date = db_last_scrobble + 1
             end_date = None
-        elif end_date is None and db_last_scrobble > api_first_scrobble:
+        elif end_date is None and db_first_scrobble > api_first_scrobble:
             start_date = None
             end_date = db_first_scrobble - 1
         if start_date is not None and end_date is not None:

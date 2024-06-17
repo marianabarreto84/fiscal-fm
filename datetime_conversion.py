@@ -35,6 +35,8 @@ def timestamp_to_unix(dt, in_utc=False):
 
 
 def date_to_unix(date_string):
+    if len(date_string) == 0:
+        return None
     # Parse da data string para um objeto datetime
     date_obj = datetime.strptime(date_string, '%Y-%m-%d')
 
