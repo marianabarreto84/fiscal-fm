@@ -3,6 +3,7 @@ import constantes
 import sys
 import time
 from file_manager import get_lines_from_file
+from get_spotify_token import get_access_token
 
 def get_spotify_track(track_name, artist_name):
     track_name = track_name.replace("'", "")
@@ -11,7 +12,7 @@ def get_spotify_track(track_name, artist_name):
 
     # Faz a busca na API do Spotify
     headers = {
-        'Authorization': 'Bearer {}'.format(constantes.SPOTIFY_ACCESS_TOKEN)
+        'Authorization': 'Bearer {}'.format(get_access_token())
     }
 
     params = {

@@ -4,12 +4,13 @@ import sys
 import time
 import requests
 from file_manager import get_lines_from_file
+from get_spotify_token import get_access_token
 
 def get_artist_top_tracks(artist_name, limit=1, initial=0):
     # Buscar o ID do artista
     search_url = f"https://api.spotify.com/v1/search?q={artist_name}&type=artist"
     headers = {
-        'Authorization': f'Bearer {constantes.SPOTIFY_ACCESS_TOKEN}'
+        'Authorization': f'Bearer {get_access_token()}'
     }
     response = requests.get(search_url, headers=headers)
     if response.status_code == 200:

@@ -240,7 +240,7 @@ def save_user_recent_tracks(user, start_date=None, end_date=None):
     rt_info = get_recent_tracks_info(user, constantes.API_KEY)
 
     api_playcount = get_api_playcount(user_info)
-    api_registered = get_api_registered(user_info)
+    # api_registered = get_api_registered(user_info)
     api_last_scrobble = get_api_last_scrobble(rt_info)
     api_total_scrobbles = get_api_total_scrobbles(rt_info)
     api_total_pages = get_api_page_count(user, constantes.API_KEY)
@@ -312,7 +312,10 @@ def save_user_recent_tracks(user, start_date=None, end_date=None):
         db_playcount += save_to_database(recent_tracks)
         print(f"[save_user_recent_tracks] Página: {page} ({len(recent_tracks)}) | Quantidade de scrobbles inseridos: {db_playcount} | Progresso: {(db_playcount/api_total_scrobbles)*100:.2f}%")
         time.sleep(constantes.WAIT_TIME)
-
+    
+    if api_playcount - db_playcount > 1 or db_playcount > api_playcount:
+        print(f"[save_user_recent_tracks] Existe alguma inconsistência com o usuário. Por favor, tente consertá-la assim que possível.")
+        return -1
     return
 
 def user_verified(user):
@@ -343,7 +346,12 @@ if __name__ == '__main__':
         if tipo == "d":
             start_date = input(f"[get_recent_tracks] Data de início (formato YYYY-MM-DD): ")
             end_date = input(f"[get_recent_tracks] Data de fim (formato YYYY-MM-DD): ")
-        save_user_recent_tracks(user, start_date=date_to_unix(start_date), end_date=date_to_unix(end_date))
+            save_user_recent_tracks(user, start_date=date_to_unix(start_date), end_date=date_to_unix(end_date))
+        elif tipo == "a":
+            user_info = get_user_info(user, constantes.API_KEY)
+            api_playcount = get_api_playcount(user_info)
+            db_playcount = get_db_playcount(user)
+            attempt_fix_inconsistency(user, constantes.API_KEY, api_playcount, db_playcount)
     else:
         save_user_recent_tracks(user)
 

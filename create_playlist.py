@@ -6,12 +6,13 @@ import sys
 from get_top_tracks import get_artist_top_tracks
 from get_tracks import get_spotify_track
 from file_manager import get_lines_from_file
+from get_spotify_token import get_access_token
 
 def create_playlist(playlist_name, track_ids):
     # Criar a playlist
     create_playlist_url = "https://api.spotify.com/v1/me/playlists"
     headers = {
-        'Authorization': f'Bearer {constantes.SPOTIFY_ACCESS_TOKEN}',
+        'Authorization': f'Bearer {get_access_token()}',
         'Content-Type': 'application/json'
     }
     data = {
@@ -79,9 +80,9 @@ if __name__ == "__main__":
             track_found = get_spotify_track(track_name, artist_name)
             if track_found:
                 print(f"[main] {track_found['name']} - Artista: {track_found['artist']} - Album: {track_found['album']} - ID: {track_found['id']} | Original: {track_name} - {artist_name}")
+                playlist.append(track_found['id'])
             else:
                 print(f"[main] Não foi possivel encontrar a musica {track_name} de {artist_name}.")
-            playlist.append(track_found['id'])
             time.sleep(0.5)
     
     time.sleep(2)

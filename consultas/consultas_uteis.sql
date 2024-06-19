@@ -264,3 +264,29 @@ WHERE (track, artist) NOT IN (SELECT track, artist FROM scrobbles
 --AND username IN (SELECT * FROM vic_seguindo)
 GROUP BY track, artist ORDER BY count(DISTINCT username) DESC, count(*) DESC
 LIMIT 100;
+
+-- nova funcao de ranking (a outra tava muito lenta)
+INSERT INTO artists_ranking(artist, ranking, scrobble_count, username, ranking_date)
+SELECT 
+    artist,
+    RANK() OVER (PARTITION BY artist ORDER BY COUNT(*) DESC) AS ranking,
+    COUNT(*) AS scrobble_count,
+    username,
+    current_date
+FROM 
+    scrobbles
+WHERE scrobbles.artist IN (SELECT artist FROM scrobbles WHERE date(scrobble_date) = current_date)
+GROUP BY 
+    artist, username;
+
+SELECT lr.artist, fr.ranking AS velho, lr.ranking AS novo, 
+lr.scrobble_count - fr.scrobble_count AS diferenca,
+CASE WHEN lr.ranking > fr.ranking THEN '-' ELSE '+' END AS status,
+abs(fr.ranking - lr.ranking) AS posicoes
+FROM 
+(SELECT * FROM artists_ranking ar WHERE ranking_date = '2024-01-01') fr,
+(SELECT * FROM artists_ranking ar WHERE ranking_date = '2024-06-19') lr
+WHERE fr.artist = lr.artist
+AND fr.username = lr.username
+AND fr.ranking <> lr.ranking
+AND fr.username='mbarretov2';
