@@ -8,6 +8,7 @@ from get_tracks import get_spotify_track
 from file_manager import get_lines_from_file
 from get_spotify_token import get_access_token
 from get_kworb_list import get_track_ids
+from get_artist_tracks import get_artist_tracks
 
 def create_playlist(playlist_name, track_ids):
     # Criar a playlist
@@ -53,17 +54,17 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 3:
         print("[main] Por favor insira o nome da playlist e o nome do arquivo original que será criada nos argumentos da linha de comando.")
-        print("\t- python create_playlist.py \"<nome_do_arquivo>\" \"<nome_da_playlist>\" [<tipo>]")
-        print("\t- <tipo>: \"a\" para arquivos de artistas, \"t\" para arquivos de musicas e \"ki\" para ids obtidas do kworb. O padrão é \"t\".")
+        print("\t- python create_playlist.py \"<nome_do_arquivo>\"|\"<nome_do_artista>\" \"<nome_da_playlist>\" [<tipo>]")
+        print("\t- <tipo>: \"a\" para arquivos de artistas, \"t\" para arquivos de musicas, \"ki\" para ids obtidas do kworb e \"tm\" para pegar todas as músicas de um determinado artista. O padrão é \"t\".")
         exit()
     elif len(sys.argv) > 3:
         tipo = sys.argv[3]
 
-    file_name = sys.argv[1]
     playlist_name = sys.argv[2]
-    artists = get_lines_from_file(f"files/{file_name}")
 
     if tipo == "a":
+        file_name = sys.argv[1]
+        artists = get_lines_from_file(f"files/{file_name}")
         for artist in artists:
             top_tracks = get_artist_top_tracks(artist)
             if top_tracks:
@@ -73,8 +74,13 @@ if __name__ == "__main__":
             
             time.sleep(0.5)
     elif tipo == "ki":
+        file_name = sys.argv[1]
         playlist = get_track_ids(f"files/{file_name}")
+    elif tipo == "tm" or tipo == "tt":
+        artist_name = sys.argv[1]
+        playlist = get_artist_tracks(artist_name)
     else: # tipo = t
+        file_name = sys.argv[1]
         tracks_lines = get_lines_from_file(f"files/{file_name}")
         for track in tracks_lines:
             track = track.split("\t-\t")
