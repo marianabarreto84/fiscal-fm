@@ -15,8 +15,27 @@ def get_artist_id(artist_name):
     results = search_response.json()
 
     for artist in results['artists']['items']:
-        print(f"Nome do artista encontrado: {artist['name']}")
-        return artist['id']
+        if artist['name'].lower() == artist_name.lower():
+            return artist['id']
+    
+    print("[get_artist_id] O artista {artist_name} não foi encontrado de primeira. Vamos analisar os resultados retornados.")
+    
+    # Crie uma lista de nomes de artistas
+    artist_names = [artist["name"] for artist in results['artists']['items']]
+
+    # Encontre o nome mais parecido usando difflib
+    artist_match = difflib.get_close_matches(artist_name, artist_names, n=1)
+
+    # Se um nome parecido foi encontrado, retorne o id correspondente
+    if artist_match:
+        artist_match = artist_match[0]
+        for artist in results['artists']['items']:
+            if artist["name"] == artist_match:
+                id_found = artist["id"]
+                name_found = artist["name"]
+                print(f"[get_artist_id] O id do artista com nome mais parecido é: {name_found} - ID: {id_found}")
+                return id_found
+    return
 
 
 def get_album_tracks(album_id):
@@ -44,10 +63,15 @@ def get_artist_albums(artist_id):
 
     search_response = requests.get(search_url, headers=headers)
     results = search_response.json()
-    albums = []
+    albums_info = []
     for album in results['items']:
+        album = {'id': album['id'], 'name': album['name'], 'release_date': album['release_date']}
+        print(f"[get_artist_albums] Nome do Álbum: {album['name']} - Data da Lançamento: {album['release_date']}")
+        albums_info.append(album)
+    albums_info = sorted(albums_info, key=lambda x: x['release_date'])
+    albums = []
+    for album in albums_info:
         albums.append(album['id'])
-    print()
     return albums
 
 def get_spotify_track(artist_name):
