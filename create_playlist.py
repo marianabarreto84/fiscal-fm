@@ -7,6 +7,7 @@ from get_top_tracks import get_artist_top_tracks
 from get_tracks import get_spotify_track
 from file_manager import get_lines_from_file
 from get_spotify_token import get_access_token
+from get_kworb_list import get_track_ids
 
 def create_playlist(playlist_name, track_ids):
     # Criar a playlist
@@ -52,8 +53,8 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 3:
         print("[main] Por favor insira o nome da playlist e o nome do arquivo original que será criada nos argumentos da linha de comando.")
-        print("\t- python create_playlist.py \"<nome_do_arquivo>.txt\" \"<nome_da_playlist>\" [<tipo>]")
-        print("\t- <tipo>: \"a\" para arquivos de artistas e \"t\" para arquivos de musicas. O padrão é \"t\".")
+        print("\t- python create_playlist.py \"<nome_do_arquivo>\" \"<nome_da_playlist>\" [<tipo>]")
+        print("\t- <tipo>: \"a\" para arquivos de artistas, \"t\" para arquivos de musicas e \"ki\" para ids obtidas do kworb. O padrão é \"t\".")
         exit()
     elif len(sys.argv) > 3:
         tipo = sys.argv[3]
@@ -71,7 +72,9 @@ if __name__ == "__main__":
                     playlist.append(track['id'])
             
             time.sleep(0.5)
-    elif tipo == "t":
+    elif tipo == "ki":
+        playlist = get_track_ids(f"files/{file_name}")
+    else: # tipo = t
         tracks_lines = get_lines_from_file(f"files/{file_name}")
         for track in tracks_lines:
             track = track.split("\t-\t")
@@ -84,6 +87,7 @@ if __name__ == "__main__":
             else:
                 print(f"[main] Não foi possivel encontrar a musica {track_name} de {artist_name}.")
             time.sleep(0.5)
+
     
     time.sleep(2)
     create_playlist(playlist_name, playlist)

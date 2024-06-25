@@ -30,8 +30,7 @@ for initial_username in constantes.LIST_OF_INITIAL_USERNAMES:
     list_of_users.extend(list_of_friends)
 
 if len(constantes.LIST_OF_INITIAL_USERNAMES) > 1:
-    list_of_users_set = set().union(*list_of_users)
-    list_of_users = list(list_of_users_set)
+    list_of_users = list(set(list_of_users))
 
 print(f"[main] Usuarios para serem atualizados: {list_of_users}\n")
 
