@@ -37,6 +37,7 @@ def update_friends_table():
                 execute_db_statement(statement, params)
                 print(f"[update_friends_table] Novo relacionamento adicionado: {initial_user} e {user}")
         time.sleep(constantes.WAIT_TIME)
+    print("[update_friends_table] Tabela de relacionamento entre seguidores atualizada.")
     return
 
 if __name__ == "__main__":
