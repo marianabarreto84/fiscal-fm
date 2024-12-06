@@ -279,23 +279,24 @@ WHERE scrobbles.artist IN (SELECT artist FROM scrobbles WHERE date(scrobble_date
 GROUP BY 
     artist, username;
 
-SELECT lr.artist, fr.ranking AS velho, lr.ranking AS novo, 
-lr.scrobble_count - fr.scrobble_count AS diferenca,
-CASE WHEN lr.ranking > fr.ranking THEN '-' ELSE '+' END AS status,
-abs(fr.ranking - lr.ranking) AS posicoes
-FROM 
-(SELECT * FROM artists_ranking ar WHERE ranking_date = '2024-01-01') fr,
-(SELECT * FROM artists_ranking ar WHERE ranking_date = '2024-06-19') lr
-WHERE fr.artist = lr.artist
-AND fr.username = lr.username
-AND fr.ranking <> lr.ranking
-AND fr.username='mbarretov2';
+-- MONITORAMENTO
+CREATE OR REPLACE VIEW mb_ranking AS
+SELECT lr.username, lr.artist, coalesce(lr.scrobble_count, 0) AS scrobble_count, coalesce(lr.ranking, 23) AS novo, coalesce(fr.ranking, 23) AS velho,
+CASE WHEN coalesce(fr.ranking, 23) > coalesce(lr.ranking, 23) THEN '+' WHEN coalesce(lr.ranking, 23) > coalesce(fr.ranking, 23) THEN '-' ELSE '.' END AS status,
+coalesce(lr.scrobble_count, 0) - coalesce(fr.scrobble_count, 0) AS diferenca
+FROM first_ranking fr RIGHT JOIN last_ranking lr ON (fr.artist=lr.artist AND fr.username=lr.username)
+WHERE lr.username = 'mbarretov2' ORDER BY coalesce(lr.scrobble_count, 0) DESC;
 
--- exemplo comparacao
-SELECT CASE WHEN lr1.artist IS NOT NULL THEN lr1.artist ELSE lr2.artist END AS artist, COALESCE(lr1.scrobble_count, 0) AS user_count, COALESCE(lr2.scrobble_count,0) AS mb_count,
-COALESCE(lr2.scrobble_count,0) - COALESCE(lr1.scrobble_count, 0) AS diferenca,
-CASE WHEN COALESCE(lr2.scrobble_count,0) - COALESCE(lr1.scrobble_count, 0) > 0 THEN '+' ELSE '-' END AS status
-FROM 
-(SELECT * FROM last_ranking WHERE username='pedrokuchpil') lr1 FULL OUTER JOIN
-(SELECT * FROM last_ranking WHERE username='mbarretov2') lr2 ON (lr1.artist=lr2.artist)
-ORDER BY COALESCE(lr2.scrobble_count,0) DESC;
+CREATE OR REPLACE VIEW monitoramento AS
+SELECT mb.artist, mb.novo AS mb_ranking, mb.scrobble_count, mb.status,
+lr1.username AS pos_cima, lr1.scrobble_count AS count_cima, lr1.scrobble_count - mb.scrobble_count AS dif_cima,
+lr2.username AS pos_baixo, lr2.scrobble_count AS count_baixo, mb.scrobble_count - lr2.scrobble_count AS dif_baixo,
+lr3.username AS pos_top1, lr3.scrobble_count AS count_top1, lr3.scrobble_count - mb.scrobble_count AS dif_top1
+FROM mb_ranking mb, last_ranking lr1, last_ranking lr2, last_ranking lr3
+WHERE mb.artist=lr1.artist AND mb.artist=lr2.artist AND mb.artist=lr3.artist AND ((mb.novo = 1 AND lr1.ranking = 1) OR (mb.novo != 1 AND lr1.ranking = mb.novo - 1))
+AND lr2.ranking = mb.novo + 1 AND lr3.ranking = 1;
+
+-- MAIS OUVIDAS POR MÊS
+SELECT username, track, artist, to_char(scrobble_date, 'MM-YYYY'), count(*)
+FROM scrobbles
+GROUP BY username, track, artist, to_char(scrobble_date, 'MM-YYYY') ORDER BY count(*) DESC;

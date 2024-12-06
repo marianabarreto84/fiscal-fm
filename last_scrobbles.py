@@ -3,7 +3,7 @@ import constantes
 
 from DAO import insert_into_control_panel, get_control_panel_info, update_control_panel, update_visions, get_db_query
 from get_recent_tracks import save_user_recent_tracks
-from get_friends import get_api_friends
+from get_friends import get_api_friends, update_friends_table
 from generate_artists_ranking import insert_artist_ranking, select_artists_today
 
 from datetime_conversion import timestamp_to_unix
@@ -28,6 +28,8 @@ status = 1
 for initial_username in constantes.LIST_OF_INITIAL_USERNAMES:
     list_of_friends = get_api_friends(initial_username)
     list_of_users.extend(list_of_friends)
+
+update_friends_table()
 
 if len(constantes.LIST_OF_INITIAL_USERNAMES) > 1:
     list_of_users = list(set(list_of_users))
