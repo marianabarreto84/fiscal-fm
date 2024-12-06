@@ -16,7 +16,7 @@ Este projeto utiliza as APIs do **Last FM** e do **Spotify** para coletar regist
    - Spotify: [Spotify Developer](https://developer.spotify.com/)
 2. **Dependências Python:** Instale as bibliotecas necessárias:
    ```bash
-   pip install requests pandas spotipy
+   pip install -r requirements.txt
    ```
 
 ## Configuração
