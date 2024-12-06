@@ -1,9 +1,21 @@
+import requests
 from bs4 import BeautifulSoup
+from get_artist_tracks import get_artist_id
 
-def get_track_ids(html_file):
-    # Lê o conteúdo do arquivo HTML
-    with open(html_file, 'r', encoding='utf-8') as file:
-        content = file.read()
+def get_track_ids(artist_name):
+    # Define a URL da página do artista
+    artist_id = get_artist_id(artist_name)
+    url = f"https://kworb.net/spotify/artist/{artist_id}_songs.html"
+    
+    # Faz a requisição HTTP para obter o conteúdo da página
+    response = requests.get(url)
+    
+    # Verifica se a requisição foi bem-sucedida
+    if response.status_code != 200:
+        raise Exception(f"Erro ao acessar a URL: {url}")
+    
+    # Lê o conteúdo da página HTML
+    content = response.text
     
     # Cria um objeto BeautifulSoup
     soup = BeautifulSoup(content, 'html.parser')

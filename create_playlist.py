@@ -74,8 +74,8 @@ if __name__ == "__main__":
             
             time.sleep(0.5)
     elif tipo == "ki":
-        file_name = sys.argv[1]
-        playlist = get_track_ids(f"files/{file_name}")
+        artist_name = sys.argv[1]
+        playlist = get_track_ids(artist_name)
     elif tipo == "tm" or tipo == "tt":
         artist_name = sys.argv[1]
         playlist = get_artist_tracks(artist_name)

@@ -290,3 +290,12 @@ WHERE fr.artist = lr.artist
 AND fr.username = lr.username
 AND fr.ranking <> lr.ranking
 AND fr.username='mbarretov2';
+
+-- exemplo comparacao
+SELECT CASE WHEN lr1.artist IS NOT NULL THEN lr1.artist ELSE lr2.artist END AS artist, COALESCE(lr1.scrobble_count, 0) AS user_count, COALESCE(lr2.scrobble_count,0) AS mb_count,
+COALESCE(lr2.scrobble_count,0) - COALESCE(lr1.scrobble_count, 0) AS diferenca,
+CASE WHEN COALESCE(lr2.scrobble_count,0) - COALESCE(lr1.scrobble_count, 0) > 0 THEN '+' ELSE '-' END AS status
+FROM 
+(SELECT * FROM last_ranking WHERE username='pedrokuchpil') lr1 FULL OUTER JOIN
+(SELECT * FROM last_ranking WHERE username='mbarretov2') lr2 ON (lr1.artist=lr2.artist)
+ORDER BY COALESCE(lr2.scrobble_count,0) DESC;
