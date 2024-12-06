@@ -161,7 +161,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 constantes.py
-playlists.py
 teste.json
+playlists.py
 files/
 .cache-maripbarreto
