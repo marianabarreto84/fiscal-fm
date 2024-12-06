@@ -17,3 +17,46 @@ Este projeto utiliza as APIs do **Last FM** e do **Spotify** para coletar regist
 2. **Dependências Python:** Instale as bibliotecas necessárias:
    ```bash
    pip install requests pandas spotipy
+   ```
+
+## Configuração
+1. Clone este repositório:
+   ```bash
+   git clone <URL_DO_REPOSITORIO>
+   cd <NOME_DA_PASTA>
+   ```
+2. Configure suas credenciais no arquivo `constantes.py`:
+   - `API_KEY` para Last FM.
+   - `SPOTIFY_CLIENT_ID` e `SPOTIFY_CLIENT_SECRET` para Spotify.
+
+## Uso
+### Coletar Scrobbles
+Para coletar os dados dos usuários configurados:
+```bash
+python main.py
+```
+
+### Criar Playlists
+Para gerar playlists no Spotify:
+```bash
+python create_playlist.py "<nome_do_arquivo>" "<nome_da_playlist>" [<tipo>]
+```
+- `tipo` (opcional):
+  - `a`: Arquivos de artistas.
+  - `t`: Arquivos de músicas (padrão).
+  - `ki`: IDs obtidas do kworb.
+  - `tm`: Todas as músicas de um artista.
+
+## Para Saber Mais
+Consulte a [Wiki do Projeto](<URL_DA_WIKI>) para obter informações detalhadas sobre arquitetura, comandos avançados, e outros detalhes técnicos.
+
+## Limitações
+- **Dependências:** O programa depende do funcionamento das APIs do Last FM e Spotify.
+- **Interação:** Todo o controle é feito via linha de comando; a interface gráfica ainda não está implementada.
+- **Dados Limitados:** Não inclui informações de gênero musical das faixas.
+
+## Contribuição
+Contribuições são bem-vindas! Abra uma issue ou envie um pull request.
+
+## Licença
+Este projeto está licenciado sob a MIT License. Consulte o arquivo `LICENSE` para mais informações.
