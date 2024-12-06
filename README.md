@@ -48,7 +48,7 @@ python create_playlist.py "<nome_do_arquivo>" "<nome_da_playlist>" [<tipo>]
   - `tm`: Todas as músicas de um artista.
 
 ## Para Saber Mais
-Consulte a [Wiki do Projeto](<URL_DA_WIKI>) para obter informações detalhadas sobre arquitetura, comandos avançados, e outros detalhes técnicos.
+Consulte a [Wiki do Projeto](https://github.com/marianabarreto84/fiscal-fm/wiki/Wiki-do-Projeto) para obter informações detalhadas sobre arquitetura, comandos avançados, e outros detalhes técnicos.
 
 ## Limitações
 - **Dependências:** O programa depende do funcionamento das APIs do Last FM e Spotify.
